@@ -1,0 +1,50 @@
+* {
+  margin: 0;
+  padding: 0; }
+
+body {
+  display: flex;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  background-color: #21252e; }
+
+.card {
+  display: flex;
+  position: fixed;
+  width: 600px;
+  height: 300px;
+  transition: transform .3s ease-out;
+  box-shadow: 0 0 2px 0 #000;
+  border-radius: 8px; }
+  @media (max-width: 700px) {
+    .card {
+      width: 80%; } }
+  @media (max-height: 400px) {
+    .card {
+      height: 40%; } }
+
+.first {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-family: sans-serif;
+  color: #21252e;
+  background-color: #FFA719; }
+
+.second {
+  background-color: #e56660; }
+
+.third {
+  background-color: #b94a53; }
+
+.fourth {
+  background-color: #4b345e; }
+
+.fiveth {
+  background-color: #724e94; }
+
+/*# sourceMappingURL=style.css.map */
