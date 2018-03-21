@@ -8,6 +8,8 @@ const CARD_SWITCH_RANGE = '130%';
 /* Do not change this */
 const CARD_ARRAY = document.querySelectorAll('div[class*="card"]');
 let last_element = CARD_ARRAY[CARD_ARRAY.length - 1];
+let isMoving = false;
+let scrolling = '';
 
 
 setCardOffset();
@@ -34,7 +36,7 @@ window.addEventListener('wheel', function(e) {
 
   /* return when you scroll during the animation of a card */
   for (let index of CARD_ARRAY) {
-    if ((index.dataset.scrolling === 'up') || (index.dataset.transition === 'trans') || (index.dataset.scrolling === 'down')) return;
+    if ((scrolling === 'up') || (scrolling === 'down') || (isMoving)) return;
   }
 
   for (let index of CARD_ARRAY) {
@@ -53,23 +55,21 @@ window.addEventListener('wheel', function(e) {
         else previousSibling.dataset.order = 1;
 
         previousSibling.dataset.offset = 0;
-        previousSibling.style.transform = `translate(${previousSibling.dataset.offset}px, ${previousSibling.dataset.offset}px)`;
-        previousSibling.dataset.scrolling = 'up';
         previousSibling.style.transform = `translate(0px, -${CARD_SWITCH_RANGE})`;
-        previousSibling.style.webkitAnimationPlayState = 'running';
+
         animationObject = previousSibling;
         index.dataset.order = 2;
-        previousSibling.dataset.transition = "trans";
-
+        isMoving = true;
+        scrolling = 'up';
       }
 
       /*switch the foremost card */
       else if (e.deltaY > 0){
         index.style.transform = `translate(0px, -${CARD_SWITCH_RANGE})`;
-        index.dataset.scrolling = 'down';
-        animationObject = index;
-        index.dataset.transition = "trans";
         index.dataset.order = COUNT_OF_CARDS;
+        scrolling = 'down';
+        animationObject = index;
+        isMoving = true;
       }
     }
     else {
@@ -80,39 +80,35 @@ window.addEventListener('wheel', function(e) {
 
   if (animationObject !== undefined) {
     animationObject.addEventListener('transitionend', function(){
-      if (animationObject.dataset.scrolling === 'down') {
-        for (let index of CARD_ARRAY) {
-          if (index.dataset.scrolling === 'down') {
-            index.style.zIndex = 0;
-            index.dataset.scrolling = '';
-            index.dataset.offset = COUNT_OF_CARDS * CARD_PEN_OFFSET;
-            index.style.transform = `translate(${index.dataset.offset}px, ${index.dataset.offset}px)`;
+      if (scrolling === 'down') {
+        animationObject.style.zIndex = 0;
+        animationObject.dataset.offset = COUNT_OF_CARDS * CARD_PEN_OFFSET;
+        animationObject.style.transform = `translate(${animationObject.dataset.offset}px, ${animationObject.dataset.offset}px)`;
 
-          }
+        for (let index of CARD_ARRAY) {
           index.style.zIndex = parseInt(index.style.zIndex) + 1;
           index.dataset.offset = parseInt(index.dataset.offset) - CARD_PEN_OFFSET;
           index.style.transform = `translate(${index.dataset.offset}px, ${index.dataset.offset}px)`;
 
-          //option: once is important, because...
-          index.addEventListener('transitionend', () => index.dataset.transition = null, {once: true });
+          index.addEventListener('transitionend', () => isMoving = false, {once: true });
         }
+
+        scrolling = '';
       }
 
-      else if (animationObject.dataset.scrolling === 'up'){
+      else if (scrolling === 'up'){
         for (let index of CARD_ARRAY) {
           index.dataset.offset = parseInt(index.dataset.offset) + CARD_PEN_OFFSET;
           index.style.transform = `translate(${index.dataset.offset}px, ${index.dataset.offset}px)`;
-
-          if (index.dataset.scrolling === 'up') {
-            index.style.zIndex = COUNT_OF_CARDS + 1;
-            index.dataset.scrolling = '';
-            index.dataset.offset = 0;
-            index.style.transform = `translate(${index.dataset.offset}px, ${index.dataset.offset}px)`;
-          }
           index.style.zIndex = parseInt(index.style.zIndex) - 1;
 
-          index.addEventListener('transitionend', () => index.dataset.transition = null, {once: true });
+          index.addEventListener('transitionend', () => isMoving = false, {once: true });
         }
+        animationObject.style.zIndex = COUNT_OF_CARDS;
+        animationObject.dataset.offset = 0;
+        animationObject.style.transform = `translate(${animationObject.dataset.offset}px, ${animationObject.dataset.offset}px)`;
+
+        scrolling = '';
       }
     }, {once: true });
   }
