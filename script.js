@@ -7,6 +7,7 @@ const CARD_SWITCH_RANGE = '130%';
 
 /* Do not change this */
 const CARD_ARRAY = Array.from(document.querySelectorAll('div[class*="card"]'));
+const COUNT_OF_CARDS = CARD_ARRAY.length;
 let last_element = CARD_ARRAY[CARD_ARRAY.length - 1];
 let isMoving = false;
 let scrolling = '';
@@ -20,20 +21,15 @@ for (let i = 1; i <= CARD_ARRAY.length; i++) {
 
 setCardOffset();
 function setCardOffset() {
-  let offset = 0;
-  let order = 0;
-  let zIndex = CARD_ARRAY.length;
   CARD_ARRAY.forEach(function(item, index){
-    item.style.zIndex = zIndex;
+    item.style.zIndex = Math.abs(index - COUNT_OF_CARDS);
     item.style.transform = `translate(${offsetArray[index]}px, ${offsetArray[index]}px)`;
-    zIndex--;
   });
 }
 
 /******************************************************************/
 window.addEventListener('wheel', function(e) {
 
-  const COUNT_OF_CARDS = CARD_ARRAY.length;
   let animationObject = {};
 
   /* return when you scroll during the animation of a card */
