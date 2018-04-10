@@ -6,26 +6,28 @@ const CARD_SWITCH_RANGE = '130%';
 
 
 /* Do not change this */
-const CARD_ARRAY = document.querySelectorAll('div[class*="card"]');
+const CARD_ARRAY = Array.from(document.querySelectorAll('div[class*="card"]'));
 let last_element = CARD_ARRAY[CARD_ARRAY.length - 1];
 let isMoving = false;
 let scrolling = '';
 
+let offsetArray = [];
+let offset = 0;
+for (let i = 1; i <= CARD_ARRAY.length; i++) {
+  offsetArray.push(offset);
+  offset += CARD_PEN_OFFSET;
+}
 
 setCardOffset();
 function setCardOffset() {
   let offset = 0;
-  let order = 1;
+  let order = 0;
   let zIndex = CARD_ARRAY.length;
-  for (let index of CARD_ARRAY) {
-    index.dataset.offset = offset;
-    index.dataset.order = order;
-    index.style.zIndex = zIndex;
-    index.style.transform = `translate(${offset}px, ${offset}px)`;
-    offset = offset + CARD_PEN_OFFSET;
-    order++;
+  CARD_ARRAY.forEach(function(item, index){
+    item.style.zIndex = zIndex;
+    item.style.transform = `translate(${offsetArray[index]}px, ${offsetArray[index]}px)`;
     zIndex--;
-  }
+  });
 }
 
 /******************************************************************/
@@ -50,15 +52,10 @@ window.addEventListener('wheel', function(e) {
 
         if (previousSibling === null) {
           previousSibling = last_element;
-          previousSibling.dataset.order = 0;
         }
-        else previousSibling.dataset.order = 1;
-
-        previousSibling.dataset.offset = 0;
         previousSibling.style.transform = `translate(0px, -${CARD_SWITCH_RANGE})`;
 
         animationObject = previousSibling;
-        index.dataset.order = 2;
         isMoving = true;
         scrolling = 'up';
       }
@@ -66,15 +63,10 @@ window.addEventListener('wheel', function(e) {
       /*switch the foremost card */
       else if (e.deltaY > 0){
         index.style.transform = `translate(0px, -${CARD_SWITCH_RANGE})`;
-        index.dataset.order = COUNT_OF_CARDS;
         scrolling = 'down';
         animationObject = index;
         isMoving = true;
       }
-    }
-    else {
-      if (e.deltaY < 0) index.dataset.order++;
-      else if (e.deltaY > 0) index.dataset.order--;
     }
   }
 
@@ -82,13 +74,12 @@ window.addEventListener('wheel', function(e) {
     animationObject.addEventListener('transitionend', function(){
       if (scrolling === 'down') {
         animationObject.style.zIndex = 0;
-        animationObject.dataset.offset = COUNT_OF_CARDS * CARD_PEN_OFFSET;
-        animationObject.style.transform = `translate(${animationObject.dataset.offset}px, ${animationObject.dataset.offset}px)`;
+        animationObject.style.transform = `translate(${offsetArray[COUNT_OF_CARDS]}px, ${offsetArray[COUNT_OF_CARDS]}px)`;
 
         for (let index of CARD_ARRAY) {
           index.style.zIndex = parseInt(index.style.zIndex) + 1;
-          index.dataset.offset = parseInt(index.dataset.offset) - CARD_PEN_OFFSET;
-          index.style.transform = `translate(${index.dataset.offset}px, ${index.dataset.offset}px)`;
+          let offsetIndex = Math.abs(parseInt(index.style.zIndex) - COUNT_OF_CARDS);
+          index.style.transform = `translate(${offsetArray[offsetIndex]}px, ${offsetArray[offsetIndex]}px)`;
 
           index.addEventListener('transitionend', () => isMoving = false, {once: true });
         }
@@ -98,15 +89,14 @@ window.addEventListener('wheel', function(e) {
 
       else if (scrolling === 'up'){
         for (let index of CARD_ARRAY) {
-          index.dataset.offset = parseInt(index.dataset.offset) + CARD_PEN_OFFSET;
-          index.style.transform = `translate(${index.dataset.offset}px, ${index.dataset.offset}px)`;
           index.style.zIndex = parseInt(index.style.zIndex) - 1;
+          let offsetIndex = Math.abs(parseInt(index.style.zIndex) - COUNT_OF_CARDS);
+          index.style.transform = `translate(${offsetArray[offsetIndex]}px, ${offsetArray[offsetIndex]}px)`;
 
           index.addEventListener('transitionend', () => isMoving = false, {once: true });
         }
         animationObject.style.zIndex = COUNT_OF_CARDS;
-        animationObject.dataset.offset = 0;
-        animationObject.style.transform = `translate(${animationObject.dataset.offset}px, ${animationObject.dataset.offset}px)`;
+        animationObject.style.transform = `translate(0px, 0px)`;
 
         scrolling = '';
       }
