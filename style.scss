@@ -40,12 +40,17 @@ body {
 
 .first {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   font-size: 2rem;
   font-family: sans-serif;
   color: $backgroundColor;
   background-color: $firstCard;
+
+  @media (max-width: 700px) {
+    font-size: 1rem;
+  }
 }
 
 .second {

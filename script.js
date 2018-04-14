@@ -5,12 +5,12 @@ const CARD_PEN_OFFSET = 10; //displacement of the cards
 const CARD_SWITCH_RANGE = '130%';
 
 
-/* Do not change this */
 const CARD_ARRAY = Array.from(document.querySelectorAll('div[class*="card"]'));
+/* Do not change this */
 const COUNT_OF_CARDS = CARD_ARRAY.length;
 let last_element = CARD_ARRAY[CARD_ARRAY.length - 1];
 let isMoving = false;
-let scrolling = '';
+
 
 let offsetArray = [];
 let offset = 0;
@@ -28,9 +28,12 @@ function setCardOffset() {
 }
 
 /******************************************************************/
-window.addEventListener('wheel', function(e) {
+window.addEventListener('wheel', function(e){cardSwitching(e);});
+window.addEventListener('keydown', function(e){cardSwitching(e);});
 
+function cardSwitching(e) {
   let animationObject = {};
+  let previousSibling, scrolling = '';
 
   /* return when you scroll during the animation of a card */
   for (let index of CARD_ARRAY) {
@@ -38,31 +41,18 @@ window.addEventListener('wheel', function(e) {
   }
 
   for (let index of CARD_ARRAY) {
-
-
     if ((parseInt(window.getComputedStyle(index).zIndex) === CARD_ARRAY.length) || (parseInt(index.style.zIndex) === CARD_ARRAY.length)) {
 
       /*switch the rearmost card */
-      if (e.deltaY < 0) { //deltaY < 0 -> scrolling up
-        let previousSibling = index.previousElementSibling;
-
-        if (previousSibling === null) {
-          previousSibling = last_element;
-        }
-        previousSibling.style.transform = `translate(0px, -${CARD_SWITCH_RANGE})`;
-
-        animationObject = previousSibling;
-        isMoving = true;
-        scrolling = 'up';
+      if (e.deltaY < 0 || e.keyCode === 38) { //deltaY < 0 -> scrolling up
+        previousSibling = index.previousElementSibling;
+        if (previousSibling === null) previousSibling = last_element;
       }
 
-      /*switch the foremost card */
-      else if (e.deltaY > 0){
-        index.style.transform = `translate(0px, -${CARD_SWITCH_RANGE})`;
-        scrolling = 'down';
-        animationObject = index;
-        isMoving = true;
-      }
+      animationObject = e.deltaY < 0 || e.keyCode === 38 ? previousSibling : e.deltaY > 0 || e.keyCode === 40 ? index : '';
+      animationObject.style.transform = `translate(0px, -${CARD_SWITCH_RANGE})`;
+      scrolling = e.deltaY < 0 || e.keyCode === 38 ? 'up' : e.deltaY > 0 || e.keyCode === 40 ? 'down' : '';
+      isMoving = true;
     }
   }
 
@@ -71,31 +61,25 @@ window.addEventListener('wheel', function(e) {
       if (scrolling === 'down') {
         animationObject.style.zIndex = 0;
         animationObject.style.transform = `translate(${offsetArray[COUNT_OF_CARDS]}px, ${offsetArray[COUNT_OF_CARDS]}px)`;
-
-        for (let index of CARD_ARRAY) {
-          index.style.zIndex = parseInt(index.style.zIndex) + 1;
-          let offsetIndex = Math.abs(parseInt(index.style.zIndex) - COUNT_OF_CARDS);
-          index.style.transform = `translate(${offsetArray[offsetIndex]}px, ${offsetArray[offsetIndex]}px)`;
-
-          index.addEventListener('transitionend', () => isMoving = false, {once: true });
-        }
-
-        scrolling = '';
+        offsetSwtich(scrolling);
       }
 
       else if (scrolling === 'up'){
-        for (let index of CARD_ARRAY) {
-          index.style.zIndex = parseInt(index.style.zIndex) - 1;
-          let offsetIndex = Math.abs(parseInt(index.style.zIndex) - COUNT_OF_CARDS);
-          index.style.transform = `translate(${offsetArray[offsetIndex]}px, ${offsetArray[offsetIndex]}px)`;
-
-          index.addEventListener('transitionend', () => isMoving = false, {once: true });
-        }
+        offsetSwtich(scrolling);
         animationObject.style.zIndex = COUNT_OF_CARDS;
         animationObject.style.transform = `translate(0px, 0px)`;
-
-        scrolling = '';
       }
+      scrolling = '';
     }, {once: true });
   }
-});
+}
+
+function offsetSwtich(scrolling) {
+  for (let index of CARD_ARRAY) {
+    index.style.zIndex = scrolling === 'down' ? parseInt(index.style.zIndex) + 1 : parseInt(index.style.zIndex) - 1;
+    let offsetIndex = Math.abs(parseInt(index.style.zIndex) - COUNT_OF_CARDS);
+    index.style.transform = `translate(${offsetArray[offsetIndex]}px, ${offsetArray[offsetIndex]}px)`;
+
+    index.addEventListener('transitionend', () => isMoving = false, {once: true });
+  }
+}

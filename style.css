@@ -28,12 +28,16 @@ body {
 
 .first {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   font-size: 2rem;
   font-family: sans-serif;
   color: #21252e;
   background-color: #FFA719; }
+  @media (max-width: 700px) {
+    .first {
+      font-size: 1rem; } }
 
 .second {
   background-color: #e56660; }
